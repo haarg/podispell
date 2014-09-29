@@ -1,0 +1,273 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use IPC::Open3 qw(open3);
+use Symbol 'gensym';
+use HTML::Entities qw(decode_entities);
+
+# TODO: option parsing
+my $dictionary = 'en_US';
+
+for my $file (@ARGV) {
+  check_file($file);
+}
+
+sub check_file {
+  my ($file) = @_;
+  open my $in, '<', $file
+    or die "Can't open $file: $!";
+
+  my $source = do { local $/; <$in> };
+  close $in;
+
+  my $checked = check_pod($source);
+
+  my $outfile = "$file.check";
+  open my $out, '>', $outfile
+    or die "Can't open $outfile: $!";
+
+  print { $out } $checked;
+
+  close $out;
+
+  rename $outfile, $file;
+}
+
+sub check_pod {
+  my ($pod) = @_;
+
+  my ($check, $stopwords) = strip_code($pod);
+
+  my %stopwords;
+  $stopwords{@$stopwords} = (1) x @$stopwords;
+
+  my $pid = open3(my $in, my $out, my $err = gensym, 'hunspell', '-a', '-d', $dictionary)
+    or die "Unable to run hunspell";
+  readline $out;
+
+  my $pos = 0;
+  while ($check =~ m/\G(.*(?:\n|\z))/g) {
+    my $line = $1;
+    my $line_length = length($line);
+    $line =~ s/\n*$//;
+    print { $in } " " . $line . "\n";
+    my $line_offset = 0;
+    WORD: while (my $spell_line = <$out>) {
+      chomp $spell_line;
+      if ($spell_line eq '') {
+        last;
+      }
+      # correct spelling
+      elsif ($spell_line eq '*') {
+        next;
+      }
+      # correct compound spelling
+      elsif ($spell_line eq '-') {
+        next;
+      }
+
+      my $word;
+      my $offset;
+      my $count;
+      my @words;
+
+      if ($spell_line =~ /& (\S+) ([0-9]+) ([0-9]+): (.*)/) {
+        ($word, $count, $offset, my $words) = ($1, $2, $3, $4);
+        @words = split /, /, $words;
+      }
+      elsif ($spell_line =~ /# (\S+) ([0-9]+)/) {
+        ($word, $offset) = ($1, $2);
+      }
+      $offset--; # from extra space
+      $offset += $line_offset;
+
+      if ($stopwords{$word}) {
+        next;
+      }
+
+      my $show = substr($pod, $pos, length($line) + $line_offset);
+      substr($show, $offset + length($word), 0, "\033[0m");
+      substr($show, $offset, 0, "\033[31m");
+      print $show . "\n";
+
+      for(;;) {
+        {
+          local $| = 1;
+          print join('  ', map { "$_) $words[$_]" } 0 .. $#words) . "\n"
+            if @words;
+          print "(e)dit (s)kip (a)accept (A)dd (U)-Add lowercase (n)ext file (q)uit";
+          print " (0-$#words) replace"
+            if @words;
+          print ": ";
+        }
+        my $answer = readline STDIN;
+        chomp $answer;
+        my $new_word;
+        if ($answer eq 'e') {
+          {
+            local $| = 1;
+            print "edit: ";
+          }
+          $new_word = readline STDIN;
+          chomp $new_word;
+        }
+        elsif ($answer eq 's' || $answer eq ' ' || $answer eq '') {
+          next WORD;
+        }
+        elsif ($answer eq 'a') {
+          print { $in } "\@\n";
+          next WORD;
+        }
+        elsif ($answer eq 'A') {
+          print { $in } "*\n#\n";
+          next WORD;
+        }
+        elsif ($answer eq 'U') {
+          print { $in } "&\n#\n";
+          next WORD;
+        }
+        elsif ($answer eq 'n') {
+          return $pod;
+        }
+        elsif ($answer eq 'q') {
+          exit;
+        }
+        elsif ($answer =~ /^[0-9]$/) {
+          $new_word = $words[$answer];
+        }
+        else {
+          next;
+        }
+
+        substr($pod, $pos + $offset, length($word), $new_word);
+
+        $line_offset += length($new_word) - length($word);
+
+        next WORD;
+        last;
+      }
+    }
+    $pos += $line_offset + $line_length;
+  }
+
+  close $in;
+  close $out;
+  close $err;
+  kill 2, $pid;
+
+  return $pod;
+}
+
+sub strip_code {
+  my ($source) = @_;
+
+  my @stopwords;
+  my $out = '';
+  my $pod;
+  while ($source =~ /\G(.*\n?)/g) {
+    my $line = $1;
+    if (defined $pod) {
+      $pod .= $line;
+
+      if ($line =~ /^=cut\b/) {
+        my ($stripped, $stopwords) = strip_pod($pod);
+        $out .= $stripped;
+        push @stopwords, @$stopwords;
+        undef $pod;
+      }
+    }
+    elsif ($line =~ /^=\w+/) {
+      $pod = $line;
+    }
+    else {
+      $line =~ s/\S/ /g;
+      $out .= $line;
+    }
+  }
+  if (defined $pod) {
+    my ($stripped, $stopwords) = strip_pod($pod);
+    $out .= $stripped;
+    push @stopwords, @$stopwords;
+  }
+
+  return ($out, \@stopwords);
+}
+
+sub strip_pod {
+  my ($pod) = @_;
+  my @stopwords;
+
+  $pod =~ s{^(=begin\s+(\S+).*\n)([\s\S]*?)(^=end\s+\2)|^(=for\s+(\S+))([\s\S]*?)(\n\n)}{
+    my $pre = $2 || $5;
+    my $type = $2 || $6;
+    my $inner = $3 || $7;
+    my $post = $4 || $8;
+    my $process = substr($type, 0, 1) eq ':';
+    if ($process) {
+      substr($type, 0, 1, '');
+    }
+
+    $pre =~ s/\S/ /g;
+    $post =~ s/\S/ /g;
+    my $out = $pre;
+    if ($process) {
+      $inner = strip_pod($inner);
+    }
+
+    if ($type eq 'html') {
+      $out .= strip_html($inner);
+    }
+    elsif ($type eq 'stopwords') {
+      push @stopwords, $inner =~ /(\S+)/g;
+      $out .= ' ' x length $inner;
+    }
+    else {
+      $out .= $inner;
+    }
+    $out .= $post;
+    $out;
+  }mge;
+  $pod =~ s/^(=(?:encoding|begin|end)\b.*)(\n)/(' ' x length $1) . $2/mge;
+  $pod =~ s/^(=\w+)/' ' x length $1/mge;
+  $pod =~ s{([A-Z])(?:<<<<(\s+.*?\s+)>>>>|<<<(\s+.*?\s+)>>>|<<(\s+.*?\s+)>>|<(.*?)>)}{
+    my $code = $1;
+    my ($inner, $pad) = $2 ? ( $2, 4 )
+                      : $3 ? ( $3, 3 )
+                      : $4 ? ( $4, 2 )
+                      : $5 ? ( $5, 1 )
+                      : ();
+    my $out = ' ' x ($pad + 1);
+    if ($code eq 'I' || $code eq 'B' || $code eq 'C' || $code eq 'S' || $code eq 'X') {
+      #ok 
+    }
+    elsif ($code eq 'L') {
+      my ($label, @bits) = split /(\|)/, $inner, 2;
+      for (@bits ? @bits : $label) {
+        s/\S/ /g;
+      }
+      $inner = join('', $label, @bits);
+    }
+    else {
+      $inner =~ s/\S/ /g;
+    }
+    $out .= $inner . (' ' x $pad);
+  }ge;
+
+  $pod =~ s{(\n\n(?:[ \t]+.*\n)+\n)}{
+    my $verb = $1;
+    $verb =~ s/\S/ /g;
+    $verb;
+  }eg;
+
+  $pod =~ s{\b([A-Za-z][A-Za-z0-9_]*(?:::[A-Za-z][A-Za-z0-9_]*)+)\b}{
+    ' ' x length($1)
+  }eg;
+
+  return ($pod, \@stopwords);
+}
+
+sub strip_html {
+  my $html = shift;
+  $html =~ s/<[^>]+>//g;
+  decode_entities($html);
+}
