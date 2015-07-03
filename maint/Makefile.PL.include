@@ -6,4 +6,6 @@ use ExtUtils::MakeMaker 6.57_10 ();
 
 author 'haarg - Graham Knop (cpan:HAARG) <haarg@haarg.org>';
 
+manifest_include bin => 'podispell';
+
 1;
