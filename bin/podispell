@@ -181,7 +181,7 @@ BEGIN {
     my $stopwords = $args{stopwords} || [];
 
     my %stopwords;
-    $stopwords{@$stopwords} = (1) x @$stopwords;
+    @stopwords{@$stopwords} = (1) x @$stopwords;
 
     my @command = (
       qw(hunspell -a),
