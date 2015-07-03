@@ -4,6 +4,9 @@ $VERSION = eval $VERSION;
 1;
 __END__
 
+=for stopwords
+haarg Knop cpan HAARG podispell perl
+
 =head1 NAME
 
 App::podispell - Interactive Pod spell checker
