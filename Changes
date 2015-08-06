@@ -1,4 +1,6 @@
 Revision history for App-podispell
 
+  - actually include podispell script in release (GH#1)
+
 0.001001 - 2015-07-03
   - initial release

@@ -37,7 +37,11 @@ my %META = (
   },
 );
 
-my %MM_ARGS = ();
+my %MM_ARGS = (
+  EXE_FILES => [
+    'bin/podispell',
+  ],
+);
 
 ## BOILERPLATE ###############################################################
 require ExtUtils::MakeMaker;
