@@ -78,6 +78,7 @@ BEGIN {
       $out .= $post;
       $out;
     }mge;
+    $pod =~ s/(?<=^\n)((?:^[ \t].*\n*)+)(?=\n\S)/' ' x length $1/mge;
     $pod =~ s/^(=(?:encoding|begin|end)\b.*)(\n)/(' ' x length $1) . $2/mge;
     $pod =~ s/^(=\w+)/' ' x length $1/mge;
     $pod =~ s{([A-Z])(?:<<<<(\s+.*?\s+)>>>>|<<<(\s+.*?\s+)>>>|<<(\s+.*?\s+)>>|<(.*?)>)}{
