@@ -1,5 +1,5 @@
 package App::podispell;
-our $VERSION = '0.001002';
+our $VERSION = '0.001003';
 $VERSION = eval $VERSION;
 1;
 __END__

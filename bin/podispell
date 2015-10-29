@@ -127,7 +127,7 @@ BEGIN {
 
 BEGIN {
   package Pod::SpellChecker;
-  our $VERSION = '0.001001';
+  our $VERSION = '0.001003';
   $VERSION = eval $VERSION;
   use IPC::Open3 qw(open3);
   use Symbol 'gensym';
