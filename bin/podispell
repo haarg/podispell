@@ -65,7 +65,7 @@ BEGIN {
                         : $4 ? ( $4, 2 )
                              : ( $5, 1 );
       my $out = ' ' x ($pad + 1);
-      if ($code eq 'I' || $code eq 'B' || $code eq 'C' || $code eq 'S' || $code eq 'X') {
+      if ($code eq 'I' || $code eq 'B' || $code eq 'S' || $code eq 'X') {
         #ok 
       }
       elsif ($code eq 'L') {
