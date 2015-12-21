@@ -167,6 +167,8 @@ BEGIN {
     my $pid = open2(my $out, my $in, @command)
       or die "Unable to run hunspell";
     readline $out;
+    { my $oldfh = select($in); $| = 1; select($oldfh); }
+    local $| = 1;
 
     my $pos = 0;
     while ($check =~ m/\G(.*(?:\n|\z))/g) {
