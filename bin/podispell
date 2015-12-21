@@ -89,6 +89,10 @@ BEGIN {
       ' ' x length($1)
     }eg;
 
+    $pod =~ s{([^\w\s]+)(\s)}{
+      (' ' x length($1)) . $2
+    }eg;
+
     return ($pod, \@stopwords);
   }
 
