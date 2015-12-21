@@ -160,6 +160,8 @@ BEGIN {
     my $check = $args{check} || $source;
     my $stopwords = $args{stopwords} || [];
 
+    my $dictionary = join(',', @{$self->dictionary||[]}) || 'en_US';
+
     my %stopwords;
     @stopwords{@$stopwords} = (1) x @$stopwords;
 
@@ -295,9 +297,9 @@ BEGIN {
   use Getopt::Long qw(:config gnu_getopt no_auto_abbrev no_ignore_case);
 
   GetOptions(
-    'd|dictionary=s' => \(my $dictionary = 'en_US'),
-    'b|backup'       => \(my $backup),
-    'h|help'         => sub {
+    'd|dictionary=s@' => \(my $dictionary),
+    'b|backup'        => \(my $backup),
+    'h|help'          => sub {
       require Pod::Usage;
       Pod::Usage::pod2usage(-exitval => 0, -verbose => 1);
     },
