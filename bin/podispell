@@ -109,8 +109,7 @@ BEGIN {
   package Pod::SpellChecker;
   our $VERSION = '0.001003';
   $VERSION = eval $VERSION;
-  use IPC::Open3 qw(open3);
-  use Symbol 'gensym';
+  use IPC::Open2 qw(open2);
   use Pod::SpellChecker::Stripper qw(strip_code);
 
   sub new {
@@ -164,11 +163,8 @@ BEGIN {
     my %stopwords;
     @stopwords{@$stopwords} = (1) x @$stopwords;
 
-    my @command = (
-      qw(hunspell -a),
-      ($self->dictionary ? ('-d' => $self->dictionary) : ()),
-    );
-    my $pid = open3(my $in, my $out, my $err = gensym, @command)
+    my @command = (qw(hunspell -a -d), $dictionary);
+    my $pid = open2(my $out, my $in, @command)
       or die "Unable to run hunspell";
     readline $out;
 
@@ -278,7 +274,6 @@ BEGIN {
 
     close $in;
     close $out;
-    close $err;
     kill 2, $pid;
 
     return $source;
