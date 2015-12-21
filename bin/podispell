@@ -40,7 +40,8 @@ BEGIN {
       $post =~ s/\S/ /g;
       my $out = $pre;
       if ($process) {
-        $inner = strip_pod($inner);
+        ($inner, my $stop) = strip_pod($inner);
+        push @stopwords, @$stop;
       }
 
       if ($type eq 'html') {
