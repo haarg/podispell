@@ -15,36 +15,13 @@ BEGIN {
   sub strip_code {
     my ($source) = @_;
 
-    my @stopwords;
     my $out = '';
-    my $pod;
-    while ($source =~ /\G(.*\n?)/g) {
-      my $line = $1;
-      if (defined $pod) {
-        $pod .= $line;
-
-        if ($line =~ /^=cut\b/) {
-          my ($stripped, $stopwords) = strip_pod($pod);
-          $out .= $stripped;
-          push @stopwords, @$stopwords;
-          undef $pod;
-        }
-      }
-      elsif ($line =~ /^=\w+/) {
-        $pod = $line;
-      }
-      else {
-        $line =~ s/\S/ /g;
-        $out .= $line;
-      }
+    while ($source =~ /\G(.*?)(^=\w+.*?(?:^=cut\n|\z))?/gms) {
+      my ($code, $pod) = ($1, $2);
+      $code =~ s/\S/ /g;
+      $out .= $code . (defined $pod ? $pod : '');
     }
-    if (defined $pod) {
-      my ($stripped, $stopwords) = strip_pod($pod);
-      $out .= $stripped;
-      push @stopwords, @$stopwords;
-    }
-
-    return ($out, \@stopwords);
+    return strip_pod($out);
   }
 
   sub strip_pod {
