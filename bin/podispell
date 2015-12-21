@@ -98,8 +98,10 @@ BEGIN {
 
   sub strip_html {
     my $html = shift;
-    $html =~ s/<[^>]+>//g;
-    decode_entities($html);
+    $html =~ s{(<script\b[^>]*>.*?</script>)}{' ' x length $1}sge;
+    $html =~ s/(<[^>]+>)/' ' x length $1/ge;
+    $html =~ s/(&(?:#\d+|\w+);)/' ' x length $1/ge;
+    $html;
   }
 }
 
