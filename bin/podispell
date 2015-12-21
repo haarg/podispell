@@ -201,11 +201,11 @@ BEGIN {
         my $count;
         my @words;
 
-        if ($spell_line =~ /& (\S+) ([0-9]+) ([0-9]+): (.*)/) {
+        if ($spell_line =~ /^& (\S+) ([0-9]+) ([0-9]+): (.*)/) {
           ($word, $count, $offset, my $words) = ($1, $2, $3, $4);
           @words = split /, /, $words;
         }
-        elsif ($spell_line =~ /# (\S+) ([0-9]+)/) {
+        elsif ($spell_line =~ /^# (\S+) ([0-9]+)/) {
           ($word, $offset) = ($1, $2);
         }
         $offset--; # from extra space
