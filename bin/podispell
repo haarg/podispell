@@ -40,8 +40,9 @@ BEGIN {
       $post =~ s/\S/ /g;
       my $out = $pre;
       if ($process) {
-        ($inner, my $stop) = strip_pod($inner);
+        ($inner, my $stop, my $lang) = strip_pod($inner);
         push @stopwords, @$stop;
+        push @languages, @$lang;
       }
 
       if ($type eq 'html') {
@@ -49,6 +50,10 @@ BEGIN {
       }
       elsif ($type eq 'stopwords') {
         push @stopwords, $inner =~ /(\S+)/g;
+        $out .= ' ' x length $inner;
+      }
+      elsif ($type =~ /^lang(uage)?s?$/) {
+        push @languages, $inner =~ /(\S+)/g;
         $out .= ' ' x length $inner;
       }
       else {
@@ -94,7 +99,7 @@ BEGIN {
       (' ' x length($1)) . $2
     }eg;
 
-    return ($pod, \@stopwords);
+    return ($pod, \@stopwords, \@languages);
   }
 
   sub strip_html {
@@ -150,18 +155,24 @@ BEGIN {
   sub check_pod {
     my ($self, $pod) = @_;
 
-    my ($check, $stopwords) = strip_code($pod);
-    $self->spellcheck(source => $pod, check => $check, stopwords => $stopwords);
+    my ($check, $stopwords, $languages) = strip_code($pod);
+    $self->spellcheck(
+      source => $pod,
+      check => $check,
+      stopwords => $stopwords,
+      languages => $languages,
+    );
   }
 
   sub spellcheck {
     my ($self, %args) = @_;
-    my $source = $args{source}
+    my $source    = $args{source}
       or die "no source provided!";
-    my $check = $args{check} || $source;
+    my $check     = $args{check} || $source;
     my $stopwords = $args{stopwords} || [];
+    my $languages = $args{languages} || [];
 
-    my $dictionary = join(',', @{$self->dictionary||[]}) || 'en_US';
+    my $dictionary = join(',', @$languages, @{$self->dictionary||[]}) || 'en_US';
 
     my %stopwords;
     @stopwords{@$stopwords} = (1) x @$stopwords;
