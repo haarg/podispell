@@ -169,6 +169,7 @@ BEGIN {
     readline $out;
     { my $oldfh = select($in); $| = 1; select($oldfh); }
     local $| = 1;
+    print { $in } "!\n"; # terse mode
 
     my $pos = 0;
     while ($check =~ m/\G(.*(?:\n|\z))/g) {
