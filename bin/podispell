@@ -77,7 +77,7 @@ BEGIN {
         $inner =~ s/\S/ /g;
       }
       $out .= $inner . (' ' x $pad);
-    }ge;
+    }sge;
 
     $pod =~ s{(^\n(?:[ \t].*\n*)+\n)}{
       my $verbatim = $1;
