@@ -63,8 +63,7 @@ BEGIN {
       my ($inner, $pad) = $2 ? ( $2, 4 )
                         : $3 ? ( $3, 3 )
                         : $4 ? ( $4, 2 )
-                        : $5 ? ( $5, 1 )
-                        : ();
+                             : ( $5, 1 );
       my $out = ' ' x ($pad + 1);
       if ($code eq 'I' || $code eq 'B' || $code eq 'C' || $code eq 'S' || $code eq 'X') {
         #ok 
