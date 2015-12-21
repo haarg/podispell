@@ -219,6 +219,7 @@ BEGIN {
         $offset += $line_offset;
 
         if ($stopwords{$word}) {
+          print { $in } "\@$word\n";
           next;
         }
 
