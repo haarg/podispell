@@ -249,15 +249,15 @@ BEGIN {
             next WORD;
           }
           elsif ($answer eq 'a') {
-            print { $in } "\@\n";
+            print { $in } "\@$word\n";
             next WORD;
           }
           elsif ($answer eq 'A') {
-            print { $in } "*\n#\n";
+            print { $in } "*$word\n#\n";
             next WORD;
           }
           elsif ($answer eq 'U') {
-            print { $in } "&\n#\n";
+            print { $in } "&$word\n#\n";
             next WORD;
           }
           elsif ($answer eq 'n') {
