@@ -68,12 +68,10 @@ BEGIN {
       if ($code eq 'I' || $code eq 'B' || $code eq 'S' || $code eq 'X') {
         #ok 
       }
-      elsif ($code eq 'L') {
-        my ($label, @bits) = split /(\|)/, $inner, 2;
-        for (@bits ? @bits : $label) {
-          s/\S/ /g;
-        }
-        $inner = join('', $label, @bits);
+      elsif ($code eq 'L' && $inner =~ /\|/) {
+        my ($label, $rest) = $inner =~ m{\A(.*?)(\|.*?)\z}s;
+        $rest =~ s/\S/ /g;
+        $inner = $label . $rest;
       }
       else {
         $inner =~ s/\S/ /g;
