@@ -191,6 +191,10 @@ BEGIN {
         elsif ($spell_line eq '-') {
           next;
         }
+        # correct root
+        elsif ($spell_line =~ /^\+ /) {
+          next;
+        }
 
         my $word;
         my $offset;
