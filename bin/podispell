@@ -266,7 +266,7 @@ BEGIN {
           elsif ($answer eq 'q') {
             exit;
           }
-          elsif ($answer =~ /^[0-9]$/) {
+          elsif ($answer =~ /^[0-9]+$/) {
             $new_word = $words[$answer];
           }
           else {
