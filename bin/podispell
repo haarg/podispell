@@ -208,6 +208,10 @@ BEGIN {
         elsif ($spell_line =~ /^# (\S+) ([0-9]+)/) {
           ($word, $offset) = ($1, $2);
         }
+        else {
+          warn "unknown output: $spell_line\n";
+          next;
+        }
         $offset--; # from extra space
         $offset += $line_offset;
 
