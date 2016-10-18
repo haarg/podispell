@@ -113,7 +113,7 @@ BEGIN {
 BEGIN {
   package Pod::SpellChecker;
   our $VERSION = '0.001004';
-  $VERSION = eval $VERSION;
+  $VERSION =~ tr/_//d;
   use IPC::Open2 qw(open2);
   use Pod::SpellChecker::Stripper qw(strip_code);
 
