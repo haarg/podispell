@@ -24,7 +24,7 @@ my %META = (
   resources => {
     repository => {
       url => 'https://github.com/haarg/podispell.git',
-      web => 'https://github.com/moose/podispell',
+      web => 'https://github.com/haarg/podispell',
       type => 'git',
     },
     bugtracker => {
