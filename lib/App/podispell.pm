@@ -1,7 +1,7 @@
 package App::podispell;
 use strict;
 use warnings;
-our $VERSION = '0.001003';
+our $VERSION = '0.001004';
 $VERSION =~ tr/_//d;
 1;
 __END__
