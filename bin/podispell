@@ -5,7 +5,6 @@ use warnings;
 BEGIN {
   package Pod::SpellChecker::Stripper;
   $INC{'Pod/SpellChecker/Stripper.pm'} = __FILE__;
-  use HTML::Entities qw(decode_entities);
 
   use Exporter;
   *import = \&Exporter::import;
