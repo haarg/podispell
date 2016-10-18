@@ -1,5 +1,7 @@
 Revision history for App-podispell
 
+  - fixed repository link in metadata
+
 0.001003 - 2016-10-18
   - don't spell check verbatim sections or C<> or X<> format codes
   - fix handling of =begin and =for sections
