@@ -351,7 +351,7 @@ This is an interactive Pod spell checker, modeled after the ispell interface.
 It will prompt for corrections on any spelling mistakes it finds, and overwrite
 the original file when complete.
 
-Requires hunspell.
+Requires C<hunspell>.
 
 =head1 OPTIONS
 
@@ -359,7 +359,8 @@ Requires hunspell.
 
 =item C<-d> C<--dictionary>
 
-Sets the dictionary to use.  Defaults to 'C<en_US>'.
+Sets the dictionary to use.  Defaults to 'C<en_US>'.  Can be specified multiple
+times.
 
 =item C<-b> C<--backup>
 
